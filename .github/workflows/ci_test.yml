@@ -1,0 +1,45 @@
+# .github/workflows/ci_test.yml
+
+name: Automated Test Pipeline
+
+# Pemicu (Trigger): Pipeline berjalan saat ada 'push' ke branch 'main'
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  run_tests:
+    name: Run Python Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # Langkah 1: Checkout (Mengambil kode dari repository)
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Langkah 2: Setup Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' 
+
+      # Langkah 3: Instal dependensi (pytest)
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        
+      # Langkah 4: JALANKAN SKRIP OTOMATISASI
+      - name: Execute Pytest
+        run: pytest
+        
+      # Langkah 5 (Opsional): Mengunggah Log/Report
+      - name: Collect Test Logs
+        if: always() 
+        run: |
+          echo "Hasil tes dari GitHub Actions:" > test_report.log
+          pytest --cache-clear --disable-warnings | tee -a test_report.log
+
+      - name: Upload Test Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results-log
+          path: test_report.log
